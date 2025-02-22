@@ -1,82 +1,89 @@
-import { useState } from 'react';
-import '../App.css';
+import React, { useState } from 'react';
+import { ref, set } from "firebase/database";
+import { database } from '../firebaseConfig';
 
-//hi
+interface Airport {
+  code: string;
+  name: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
+  departures: string[];
+  arrivals: string[];
+  gates: string[];
+  runway: string[];
+  taxi: string[];
+  airplanes: string[];
+}
 
-const airports = [
-  { code: 'LAX', name: 'Los Angeles International Airport' },
-  { code: 'YVR', name: 'Vancouver International Airport' },
-  { code: 'JFK', name: 'John F. Kennedy International Airport' },
-  { code: 'ORD', name: "O'Hare International Airport" },
-  { code: 'LHR', name: 'London Heathrow Airport' },
+// Sample data for demonstration purposes
+const sampleAirports: Airport[] = [
+  {
+    code: 'LAX',
+    name: 'Los Angeles International Airport',
+    location: { lat: 33.9416, lng: -118.4085 },
+    departures: ['AA100', 'UA200', 'DL300'],
+    arrivals: ['BA400', 'AF500'],
+    gates: ['A1', 'B2', 'C3'],
+    runway: ['Runway 24L', 'Runway 24R'],
+    taxi: ['Taxiway Alpha', 'Taxiway Bravo'],
+    airplanes: ['Boeing 747', 'Airbus A380'],
+  },
+  {
+    code: 'YVR',
+    name: 'Vancouver International Airport',
+    location: { lat: 49.1951, lng: -123.1779 },
+    departures: ['AC101', 'WS202'],
+    arrivals: ['AC303', 'WS404'],
+    gates: ['D4', 'E5'],
+    runway: ['Runway 08R', 'Runway 08L'],
+    taxi: ['Taxiway Charlie'],
+    airplanes: ['Boeing 777', 'Airbus A320'],
+  },
+  {
+    code: 'JFK',
+    name: 'John F. Kennedy International Airport',
+    location: { lat: 40.6413, lng: -73.7781 },
+    departures: ['DL110', 'AA220'],
+    arrivals: ['BA330', 'AF440'],
+    gates: ['F6', 'G7'],
+    runway: ['Runway 04L', 'Runway 04R'],
+    taxi: ['Taxiway Delta'],
+    airplanes: ['Boeing 737', 'Airbus A330'],
+  },
+  // ... add more airports as needed
 ];
 
-export default function Login() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [selectedAirport, setSelectedAirport] = useState('');
-  console.log(selectedAirport)
+const AirportDashboard: React.FC = () => {
+  const [message, setMessage] = useState('');
 
-  const filteredAirports = airports.filter(airport => 
-    airport.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    airport.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Function to store sample airports data into Firebase Realtime Database
+  const handleStoreAirports = async () => {
+    // Convert the array to an object keyed by airport code
+    const airportsObject = sampleAirports.reduce((acc, airport) => {
+      acc[airport.code] = airport;
+      return acc;
+    }, {} as Record<string, Airport>);
+
+    try {
+      await set(ref(database, 'airports'), airportsObject);
+      setMessage('Airports data stored successfully!');
+      console.log("Airports stored successfully!");
+    } catch (error) {
+      setMessage('Error storing airports data.');
+      console.error("Error storing airports data:", error);
+    }
+  };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <div className="login-header">
-          <h1>Airdata</h1>
-          <p>Log in to your account</p>
-        </div>
-
-        <div className="login-form">
-          <div className="form-group">
-            <label>Select Airport</label>
-            <div className="dropdown-container">
-              <input
-                type="text"
-                placeholder="Search airport..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setIsDropdownOpen(true);
-                }}
-                onClick={() => setIsDropdownOpen(true)}
-              />
-              {isDropdownOpen && (
-                <div className="dropdown-menu">
-                  {filteredAirports.map((airport) => (
-                    <div
-                      key={airport.code}
-                      className="dropdown-item"
-                      onClick={() => {
-                        setSelectedAirport(airport.code);
-                        setSearchTerm(`${airport.code} - ${airport.name}`);
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      <span className="airport-code">{airport.code}</span> - {airport.name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Employee ID</label>
-            <input type="text" placeholder="Enter your employee ID" />
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" placeholder="Enter your password" />
-          </div>
-
-          <button className="login-button">Log In</button>
-        </div>
-      </div>
+    <div style={{ padding: '20px' }}>
+      <h1>Airport Dashboard</h1>
+      <button onClick={handleStoreAirports}>Store Airports Data</button>
+      {message && <p>{message}</p>}
+      {/* Here you could add more functionality (like fetching or displaying the data) */}
     </div>
   );
-}
+};
+
+export default AirportDashboard;
