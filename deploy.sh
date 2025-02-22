@@ -2,6 +2,7 @@
 # deploy.sh
 
 # Try to commit any changes
+set -e
 git add .
 git commit -m "New build deployment"
 git push
