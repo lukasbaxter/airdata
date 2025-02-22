@@ -15,6 +15,7 @@ export default function Login() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [selectedAirport, setSelectedAirport] = useState('');
+  console.log(selectedAirport)
 
   const filteredAirports = airports.filter(airport => 
     airport.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
